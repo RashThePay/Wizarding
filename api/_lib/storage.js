@@ -1,4 +1,4 @@
-import { del, get, list, put, BlobPreconditionFailedError } from '@vercel/blob'
+import { del, get, list, put } from '@vercel/blob'
 import { normalizeGame } from '../../src/domain/model.js'
 
 const pathFor = (id) => `games/${id}.json`
@@ -37,12 +37,7 @@ export async function saveGame(game, expectedRevision, current) {
   if (current.game.revision !== expectedRevision) throw Object.assign(new Error('بازی در جای دیگری تغییر کرده است.'),{status:409})
   game.revision = current.game.revision + 1
   game.updatedAt = new Date().toISOString()
-  try {
-    await put(pathFor(game.id),JSON.stringify(game),{...options,contentType:'application/json',allowOverwrite:true,ifMatch:current.etag})
-  } catch (error) {
-    if (error instanceof BlobPreconditionFailedError) throw Object.assign(new Error('بازی هنگام ذخیره هم‌زمان تغییر کرد؛ دوباره تلاش کنید.'),{status:409})
-    throw error
-  }
+  await put(pathFor(game.id),JSON.stringify(game),{...options,contentType:'application/json',allowOverwrite:true})
   return game
 }
 
@@ -50,5 +45,5 @@ export async function deleteGame(id, expectedRevision) {
   const current = await readGame(id)
   if (!current) return
   if (current.game.revision !== expectedRevision) throw Object.assign(new Error('نسخهٔ بازی قدیمی است.'),{status:409})
-  await del(pathFor(id),{...options,ifMatch:current.etag})
+  await del(pathFor(id),options)
 }
