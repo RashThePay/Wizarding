@@ -13,6 +13,7 @@ function Button({children,variant='primary',className='',...props}) {
 function Alert({children,type='error'}) { return <div className={`alert alert-${type}`}>{children}</div> }
 function Field({label,children,hint}) { return <label className="field"><span>{label}</span>{children}{hint&&<small>{hint}</small>}</label> }
 function Empty({title,text}) { return <div className="empty"><span>✦</span><h3>{title}</h3><p>{text}</p></div> }
+function Logo({compact=false}) { return <img className={compact?'mini-sigil':'sigil'} src="/logo.png" alt={compact?'':'جادوگران'} /> }
 function Avatar({index=0,size='md',selected=false}) { const col=index%4,row=Math.floor(index/4); return <span className={`avatar avatar-${size} ${selected?'selected':''}`} style={{backgroundPosition:`${col*100/3}% ${row*100/5}%`}} aria-hidden="true"/> }
 function AvatarPicker({value,onChange}) { return <div className="avatar-picker" role="radiogroup" aria-label="انتخاب پرتره">{Array.from({length:24},(_,index)=><button type="button" role="radio" aria-checked={value===index} aria-label={`پرتره ${fa.format(index+1)}`} key={index} onClick={()=>onChange(index)}><Avatar index={index} size="sm" selected={value===index}/></button>)}</div> }
 
@@ -20,7 +21,7 @@ function Login({onLogin}) {
   const [password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false)
   const submit=async e=>{e.preventDefault();setBusy(true);setError('');try{await api.login(password);onLogin()}catch(err){setError(err.message)}finally{setBusy(false)}}
   return <main className="login-shell"><section className="login-card">
-    <div className="sigil">و</div><p className="eyebrow">دستیار بازی‌گردان</p><h1>جادوگران</h1>
+    <Logo/><p className="eyebrow">دستیار بازی‌گردان</p><h1>جادوگران</h1>
     <p className="muted">دروازهٔ برج فقط برای بازی‌گردان باز می‌شود.</p>
     <form onSubmit={submit}><Field label="رمز ورود"><input autoFocus type="password" value={password} onChange={e=>setPassword(e.target.value)} /></Field>
       {error&&<Alert>{error}</Alert>}<Button disabled={busy||!password}>{busy?'در حال ورود…':'ورود به برج'}</Button></form>
@@ -38,7 +39,7 @@ function GameList({games,onOpen,onCreate,onRefresh,onLogout,busy}) {
 }
 function GameCard({game,onClick}) { const status=game.status==='setup'?'آماده‌سازی':game.status==='active'?'در جریان':'پایان‌یافته'; return <button className="game-card" onClick={onClick}><div className={`status status-${game.status}`}>{status}</div><h3>{game.title}</h3><p>شب {fa.format(game.nightNumber)} · ویرایش {fa.format(game.revision)}</p><small>{date(game.updatedAt)}</small><span className="arrow">←</span></button> }
 
-function Header({title,subtitle,onBack,onLogout,actions}) { return <header className="topbar"><div className="brand">{onBack&&<button onClick={onBack} aria-label="بازگشت">→</button>}<div className="mini-sigil">و</div><div><strong>{title}</strong><small>{subtitle}</small></div></div><div className="header-actions">{actions}<button className="icon-btn" onClick={onLogout}>خروج</button></div></header> }
+function Header({title,subtitle,onBack,onLogout,actions}) { return <header className="topbar"><div className="brand">{onBack&&<button onClick={onBack} aria-label="بازگشت">→</button>}<Logo compact/><div><strong>{title}</strong><small>{subtitle}</small></div></div><div className="header-actions">{actions}<button className="icon-btn" onClick={onLogout}>خروج</button></div></header> }
 
 function Setup({game,setGame,onSave,onLaunch,onBack,onLogout,busy}) {
   const errors=validateSetup(game), updateCircle=(ci,key,value)=>setGame({...game,circles:game.circles.map((c,i)=>i===ci?{...c,[key]:value}:c)})
@@ -124,7 +125,7 @@ export default function App() {
   const create=async()=>{setBusy(true);try{const created=await api.create(createDraftGame());setGame(created);setView('setup')}catch(e){setError(e.message)}finally{setBusy(false)}}
   const open=async id=>{setBusy(true);try{const loaded=await api.get(id);setGame(loaded);setView(loaded.status==='setup'?'setup':'overview')}catch(e){setError(e.message)}finally{setBusy(false)}}
   const mutate=async(action,extra={})=>{const updated=await api.mutate(game,action,extra);setGame(updated);return updated}
-  if(auth===null)return <main className="splash"><div className="sigil">و</div><p>گشودن دفتر برج…</p></main>
+  if(auth===null)return <main className="splash"><div><Logo/><p>گشودن دفتر برج…</p></div></main>
   if(!auth)return <Login onLogin={()=>{setAuth(true);loadList()}}/>
   const backList=()=>{setGame(null);setView('list');loadList()}
   if(!game)return <>{error&&<div className="toast">{error}</div>}<GameList games={games} onOpen={open} onCreate={create} onRefresh={loadList} onLogout={logout} busy={busy}/></>
