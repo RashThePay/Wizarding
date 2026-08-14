@@ -35,7 +35,6 @@ export function allWizards(game) {
 
 export function getWizard(game, id) {
   for (const circle of game.circles) {
-    circle.knownSpells = [...new Set(circle.wizards.flatMap(w=>w.initialSpells || []))]
     const wizard = circle.wizards.find((item) => item.id === id)
     if (wizard) return wizard
   }
@@ -60,6 +59,7 @@ export function validateSetup(game) {
   if (!game.grandWizardName.trim()) errors.push('نام حقیقی جادوگر اعظم الزامی است.')
   const faces = new Set(), names = new Set()
   for (const circle of game.circles) {
+    if (game.status === 'setup') circle.knownSpells = [...new Set(circle.wizards.flatMap(w=>w.initialSpells || []))]
     if (!circle.name.trim()) errors.push('نام همهٔ محفل‌ها الزامی است.')
     if (circle.wizards.length !== 4) errors.push(`محفل ${circle.name} باید دقیقاً چهار جادوگر داشته باشد.`)
     for (const wizard of circle.wizards) {
@@ -76,6 +76,37 @@ export function validateSetup(game) {
   }
   if (names.has(game.grandWizardName.trim())) errors.push('نام جادوگر اعظم نباید با نام جادوگری یکسان باشد.')
   return errors
+}
+
+const QUICK_CIRCLES = ['محفل سپیده','محفل سایه','محفل اخگر','محفل مهتاب','محفل زمرد','محفل نیلگون']
+const QUICK_FACES = ['آذر','باران','پگاه','تندر','ثریا','جاوید','چکاوک','خورشید','دریا','رادین','روژان','ژاله','سایه','شهاب','طوفان','عقیق','فرزاد','ققنوس','کیان','گلنار','لاله','مهتاب','نیما','هیراد']
+const QUICK_NAMES = ['آرمانا','بامداد','پرتوسا','تیرگان','ثریانا','جاودان','چمرانک','خزرانا','درفشان','رادمهر','روهینا','ژرفانا','سورینا','شبدیز','طلسما','عنبرین','فرهانا','قمرزاد','کارینا','گلپری','لالینا','مهرآوا','نوشینک','هورزاد']
+const QUICK_GRAND_NAMES = ['اورمزد','زروان','اهورین','مهرگان','فرنام']
+
+function randomIndex(length) {
+  const values = new Uint32Array(1)
+  crypto.getRandomValues(values)
+  return values[0] % length
+}
+
+function shuffled(items) {
+  const result=[...items]
+  for(let i=result.length-1;i>0;i--){const j=randomIndex(i+1);[result[i],result[j]]=[result[j],result[i]]}
+  return result
+}
+
+export function quickSetupGame(source) {
+  const game=structuredClone(source), faces=shuffled(QUICK_FACES), names=shuffled(QUICK_NAMES)
+  game.grandWizardName=QUICK_GRAND_NAMES[randomIndex(QUICK_GRAND_NAMES.length)]
+  game.circles.forEach((circle,ci)=>{
+    circle.name=QUICK_CIRCLES[ci]
+    circle.wizards.forEach((wizard,wi)=>{
+      const index=ci*4+wi, spells=shuffled(SPELLS.filter(s=>s.level===1)).slice(0,2)
+      wizard.face=faces[index]; wizard.trueName=names[index]; wizard.initialSpells=spells.map(s=>s.id)
+    })
+    circle.knownSpells=[...new Set(circle.wizards.flatMap(w=>w.initialSpells))]
+  })
+  return game
 }
 
 export function normalizeGame(game) {

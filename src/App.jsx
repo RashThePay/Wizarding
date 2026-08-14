@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from './api.js'
-import { blankNight, createDraftGame, getWizard, validateSetup } from './domain/model.js'
+import { blankNight, createDraftGame, getWizard, quickSetupGame, validateSetup } from './domain/model.js'
 import { resolveNight, validateNight } from './domain/engine.js'
 import { LEVEL_ONE_SPELLS, SPELL_BY_ID, SPELLS, TARGET, targetLabel } from './domain/rules.js'
 
@@ -42,8 +42,9 @@ function Setup({game,setGame,onSave,onLaunch,onBack,onLogout,busy}) {
   const errors=validateSetup(game), updateCircle=(ci,key,value)=>setGame({...game,circles:game.circles.map((c,i)=>i===ci?{...c,[key]:value}:c)})
   const updateWizard=(ci,wi,key,value)=>setGame({...game,circles:game.circles.map((c,i)=>i===ci?{...c,wizards:c.wizards.map((w,j)=>j===wi?{...w,[key]:value}:w)}:c)})
   const changeCount=count=>{const base=createDraftGame(game.title,count);setGame({...game,circles:count>game.circles.length?[...game.circles,...base.circles.slice(game.circles.length)]:game.circles.slice(0,count)})}
+  const quickSetup=()=>{if(confirm('نام‌ها و طلسم‌های فعلی با یک چیدمان تصادفی جایگزین شوند؟'))setGame(quickSetupGame(game))}
   return <><Header title={game.title} subtitle="آماده‌سازی بازی" onBack={onBack} onLogout={onLogout}/><main className="container page">
-    <div className="page-head"><div><p className="eyebrow">پیش از شب نخست</p><h2>چیدمان محفل‌ها</h2><p>نام‌ها و دانش اولیه پس از آغاز بازی قفل می‌شوند.</p></div><div className="actions"><Button variant="ghost" onClick={onSave} disabled={busy}>ذخیرهٔ پیش‌نویس</Button><Button onClick={onLaunch} disabled={busy||errors.length>0}>آغاز بازی</Button></div></div>
+    <div className="page-head"><div><p className="eyebrow">پیش از شب نخست</p><h2>چیدمان محفل‌ها</h2><p>چیدمان سریع بسازید یا همهٔ فیلدها را دستی وارد و ویرایش کنید.</p></div><div className="actions"><Button variant="ghost" onClick={quickSetup} disabled={busy}>✦ چیدمان سریع</Button><Button variant="ghost" onClick={onSave} disabled={busy}>ذخیرهٔ پیش‌نویس</Button><Button onClick={onLaunch} disabled={busy||errors.length>0}>آغاز بازی</Button></div></div>
     {errors.length>0&&<details className="alert alert-warn"><summary>{fa.format(errors.length)} مورد تا آغاز بازی باقی مانده</summary><ul>{errors.map((e,i)=><li key={i}>{e}</li>)}</ul></details>}
     <section className="panel setup-basics"><Field label="عنوان بازی"><input value={game.title} onChange={e=>setGame({...game,title:e.target.value})}/></Field><Field label="نام حقیقی جادوگر اعظم"><input value={game.grandWizardName} onChange={e=>setGame({...game,grandWizardName:e.target.value})}/></Field><Field label="تعداد محفل"><select value={game.circles.length} onChange={e=>changeCount(Number(e.target.value))}>{[4,5,6].map(n=><option key={n} value={n}>{fa.format(n)} محفل</option>)}</select></Field></section>
     <div className="circles">{game.circles.map((circle,ci)=><section className="circle-panel" key={circle.id} style={{'--circle':circle.color}}><div className="circle-title"><input type="color" value={circle.color} onChange={e=>updateCircle(ci,'color',e.target.value)}/><input value={circle.name} onChange={e=>updateCircle(ci,'name',e.target.value)}/></div>

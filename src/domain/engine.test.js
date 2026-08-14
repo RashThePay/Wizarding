@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { blankNight, createDraftGame, validateSetup } from './model.js'
+import { blankNight, createDraftGame, quickSetupGame, validateSetup } from './model.js'
 import { levelForLinks, SPELLS } from './rules.js'
 import { resolveNight, undoLatest, validateNight } from './engine.js'
 
@@ -17,6 +17,13 @@ describe('setup and levels',()=>{
     expect([levelForLinks(6,3),levelForLinks(6,5),levelForLinks(6,8)]).toEqual([2,3,4])
   })
   test('contains every spell described by the rules table',()=>expect(SPELLS.length).toBe(53))
+  test('quick setup creates a valid, unique, editable six-circle roster',()=>{
+    const game=quickSetupGame(createDraftGame('سریع',6)),wizards=game.circles.flatMap(c=>c.wizards)
+    expect(validateSetup(game)).toEqual([])
+    expect(new Set(wizards.map(w=>w.face)).size).toBe(24)
+    expect(new Set(wizards.map(w=>w.trueName)).size).toBe(24)
+    expect(wizards.every(w=>w.initialSpells.length===2&&new Set(w.initialSpells).size===2)).toBe(true)
+  })
 })
 
 describe('night engine',()=>{
