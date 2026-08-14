@@ -1,4 +1,5 @@
 export const TARGET = { NONE: 'none', FACE: 'face', NAME: 'name' }
+export const UNKNOWN_NAME = '__unknown_true_name__'
 
 const spell = (id, name, level, target, order, description, extra = {}) =>
   ({ id, name, level, target, order, description, ...extra })

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { blankNight, createDraftGame, quickSetupGame, validateSetup } from './model.js'
-import { levelForLinks, SPELLS } from './rules.js'
+import { levelForLinks, SPELLS, UNKNOWN_NAME } from './rules.js'
 import { resolveNight, undoLatest, validateNight } from './engine.js'
 
 function gameReady() {
@@ -38,6 +38,13 @@ describe('night engine',()=>{
     Object.assign(night.actions[0],{spellId:'whisper',spokenName:target.trueName})
     const result=resolveNight(game,night)
     expect(result.game.circles[1].wizards[0].links).toContain(actor.id)
+  })
+  test('an explicitly unknown name never resolves or creates a link',()=>{
+    const game=gameReady(),night=blankNight(game),actor=game.circles[0].wizards[0]
+    Object.assign(night.actions[0],{spellId:'whisper',spokenName:UNKNOWN_NAME,force:true})
+    const result=resolveNight(game,night)
+    expect(result.ok).toBe(true)
+    expect(result.game.circles.flatMap(c=>c.wizards).every(w=>!w.links.includes(actor.id))).toBe(true)
   })
   test('shield blocks the later killing spell',()=>{
     const game=gameReady(),night=blankNight(game),protector=game.circles[0].wizards[0],killer=game.circles[0].wizards[1],target=game.circles[1].wizards[0]

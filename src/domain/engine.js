@@ -1,4 +1,4 @@
-import { SPELL_BY_ID, SPELLS, TARGET } from './rules.js'
+import { SPELL_BY_ID, SPELLS, TARGET, UNKNOWN_NAME } from './rules.js'
 import { allWizards, getCircleForWizard, getWizard, recalculateLevels } from './model.js'
 
 const clone = (value) => structuredClone(value)
@@ -156,7 +156,7 @@ export function resolveNight(sourceGame, inputNight) {
       case 'threeNames': addReport(actor.id,action.extraNames.includes(target.trueName)?'نام هدف میان سه نام بود.':'نام هدف میان سه نام نبود.'); break
       case 'count': addReport(actor.id,`${runtime.targeted.filter(x=>x.targetId===targetId&&x.order<spell.order).length} طلسم پیش‌تر هدف را نشانه گرفته بود.`); break
       case 'track': { const t=originalActions.get(targetId)?.targetWizardId; if(t)addReport(actor.id,`هدفِ ${target.face}: ${face(game,runtime.falseTraces.get(targetId)||t)}.`); break }
-      case 'listen': { const n=originalActions.get(targetId)?.spokenName; if(n)addReport(actor.id,`نام استفاده‌شده: ${n}.`); break }
+      case 'listen': { const n=originalActions.get(targetId)?.spokenName; if(n)addReport(actor.id,`نام استفاده‌شده: ${n===UNKNOWN_NAME?'نام ناشناخته یا نادرست':n}.`); break }
       case 'detect': { const s=SPELL_BY_ID[originalActions.get(targetId)?.spellId]; if(s)addReport(actor.id,`نوع طلسم هدف: ${s.target==='name'?'نام':s.target==='face'?'چهره':'بی‌هدف'}.`); break }
       case 'circleTrace': { const cs=[...new Set(runtime.targeted.filter(x=>x.targetId===targetId&&x.order<spell.order).map(x=>circle(game,x.actorId).name))]; addReport(actor.id,`محفل‌های هدف‌گیرنده: ${cs.join('، ')||'هیچ‌کدام'}.`); break }
       case 'assess': addReport(actor.id,runtime.actionResults.get(targetId)?'طلسم هدف موفق شد.':'طلسم هدف شکست خورد.'); break
