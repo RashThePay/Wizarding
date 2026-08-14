@@ -22,6 +22,7 @@ describe('setup and levels',()=>{
     expect(validateSetup(game)).toEqual([])
     expect(new Set(wizards.map(w=>w.face)).size).toBe(24)
     expect(new Set(wizards.map(w=>w.trueName)).size).toBe(24)
+    expect(new Set(wizards.map(w=>w.avatarIndex)).size).toBe(24)
     expect(wizards.every(w=>w.initialSpells.length===2&&new Set(w.initialSpells).size===2)).toBe(true)
   })
 })

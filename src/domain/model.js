@@ -15,7 +15,7 @@ export function createDraftGame(title = 'بازی جدید', circleCount = 4) {
     circles: Array.from({ length: circleCount }, (_, ci) => ({
       id: uid('circle'), name: `محفل ${ci + 1}`, color: colors[ci], knowledgeCooldown: 0, knownSpells: [],
       wizards: Array.from({ length: 4 }, (_, wi) => ({
-        id: uid('wizard'), face: `جادوگر ${ci * 4 + wi + 1}`, trueName: '', alive: true,
+        id: uid('wizard'), face: `جادوگر ${ci * 4 + wi + 1}`, trueName: '', avatarIndex: ci * 4 + wi, alive: true,
         initialSpells: [], links: [], level: 1, lastSpellId: null, lastSummon: null,
         delayedDeathNight: null, unstoppableNext: false,
       })),
@@ -96,13 +96,13 @@ function shuffled(items) {
 }
 
 export function quickSetupGame(source) {
-  const game=structuredClone(source), faces=shuffled(QUICK_FACES), names=shuffled(QUICK_NAMES)
+  const game=structuredClone(source), faces=shuffled(QUICK_FACES), names=shuffled(QUICK_NAMES), avatars=shuffled(Array.from({length:24},(_,i)=>i))
   game.grandWizardName=QUICK_GRAND_NAMES[randomIndex(QUICK_GRAND_NAMES.length)]
   game.circles.forEach((circle,ci)=>{
     circle.name=QUICK_CIRCLES[ci]
     circle.wizards.forEach((wizard,wi)=>{
       const index=ci*4+wi, spells=shuffled(SPELLS.filter(s=>s.level===1)).slice(0,2)
-      wizard.face=faces[index]; wizard.trueName=names[index]; wizard.initialSpells=spells.map(s=>s.id)
+      wizard.face=faces[index]; wizard.trueName=names[index]; wizard.avatarIndex=avatars[index]; wizard.initialSpells=spells.map(s=>s.id)
     })
     circle.knownSpells=[...new Set(circle.wizards.flatMap(w=>w.initialSpells))]
   })
@@ -110,9 +110,12 @@ export function quickSetupGame(source) {
 }
 
 export function normalizeGame(game) {
+  let avatarIndex=0
   for (const circle of game.circles || []) {
     const legacy = circle.wizards.flatMap(w => w.knownSpells || [])
     for (const wizard of circle.wizards) {
+      wizard.avatarIndex ??= avatarIndex
+      avatarIndex++
       wizard.initialSpells ||= wizard.knownSpells || []
       delete wizard.knownSpells
     }
