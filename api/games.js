@@ -36,7 +36,11 @@ export default async function handler(request,response) {
     else if(action==='undo') game=undoLatest(game)
     else if(action==='archive') game.archived=Boolean(request.body.archived)
     else return response.status(400).json({error:'عملیات ناشناخته است.'})
-    return response.json(await saveGame(game,expected))
+    // Setup is a single-GM editing surface. Rebase its submitted form on the
+    // snapshot read above, while the ETag still prevents a real concurrent write.
+    const setupAction=action==='saveSetup'||action==='launch'
+    const effectiveExpected=setupAction?current.game.revision:expected
+    return response.json(await saveGame(game,effectiveExpected,current))
   } catch(error) {
     console.error(error)
     return response.status(error.status||500).json({error:error.message||'خطای داخلی سرور.'})

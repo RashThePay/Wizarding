@@ -32,16 +32,15 @@ export async function createGame(game) {
   return game
 }
 
-export async function saveGame(game, expectedRevision) {
-  const current = await readGame(game.id)
+export async function saveGame(game, expectedRevision, current) {
   if (!current) throw Object.assign(new Error('بازی پیدا نشد.'),{status:404})
   if (current.game.revision !== expectedRevision) throw Object.assign(new Error('بازی در جای دیگری تغییر کرده است.'),{status:409})
-  game.revision = expectedRevision + 1
+  game.revision = current.game.revision + 1
   game.updatedAt = new Date().toISOString()
   try {
     await put(pathFor(game.id),JSON.stringify(game),{...options,contentType:'application/json',allowOverwrite:true,ifMatch:current.etag})
   } catch (error) {
-    if (error instanceof BlobPreconditionFailedError) throw Object.assign(new Error('بازی در جای دیگری تغییر کرده است.'),{status:409})
+    if (error instanceof BlobPreconditionFailedError) throw Object.assign(new Error('بازی هنگام ذخیره هم‌زمان تغییر کرد؛ دوباره تلاش کنید.'),{status:409})
     throw error
   }
   return game
