@@ -25,7 +25,12 @@ export default async function handler(request,response) {
     const expected=Number(request.body?.revision), action=request.body?.action
     let game=current.game
     if(action==='saveSetup') game={...request.body.game,id:game.id,revision:game.revision,nights:game.nights||[]}
-    else if(action==='launch') { const errors=validateSetup(game); if(errors.length)return response.status(422).json({error:errors.join('\n'),errors}); game.status='active' }
+    else if(action==='launch') {
+      game={...request.body.game,id:game.id,revision:game.revision,nights:game.nights||[]}
+      const errors=validateSetup(game)
+      if(errors.length)return response.status(422).json({error:errors.join('\n'),errors})
+      game.status='active'
+    }
     else if(action==='validateNight') return response.json({warnings:validateNight(game,request.body.night)})
     else if(action==='resolveNight') { const result=resolveNight(game,request.body.night); if(!result.ok)return response.status(422).json(result); game=result.game }
     else if(action==='undo') game=undoLatest(game)
