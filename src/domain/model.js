@@ -35,6 +35,7 @@ export function allWizards(game) {
 
 export function getWizard(game, id) {
   for (const circle of game.circles) {
+    circle.knownSpells = [...new Set(circle.wizards.flatMap(w=>w.initialSpells || []))]
     const wizard = circle.wizards.find((item) => item.id === id)
     if (wizard) return wizard
   }
@@ -84,7 +85,7 @@ export function normalizeGame(game) {
       wizard.initialSpells ||= wizard.knownSpells || []
       delete wizard.knownSpells
     }
-    circle.knownSpells ||= [...new Set([...legacy,...circle.wizards.flatMap(w=>w.initialSpells)])]
+    circle.knownSpells = [...new Set([...(circle.knownSpells || []),...legacy,...circle.wizards.flatMap(w=>w.initialSpells)])]
   }
   return game
 }

@@ -5,7 +5,7 @@ import { resolveNight, undoLatest, validateNight } from './engine.js'
 
 function gameReady() {
   const game=createDraftGame('آزمون',4); game.grandWizardName='اعظم'; game.status='active'
-  game.circles.forEach((c,ci)=>c.wizards.forEach((w,wi)=>{w.face=`چهره-${ci}-${wi}`;w.trueName=`نام-${ci}-${wi}`;w.knownSpells=['shield','lock']}))
+  game.circles.forEach((c,ci)=>c.wizards.forEach((w,wi)=>{w.face=`چهره-${ci}-${wi}`;w.trueName=`نام-${ci}-${wi}`;w.initialSpells=['shield','lock']}))
   return game
 }
 
@@ -33,7 +33,7 @@ describe('night engine',()=>{
   })
   test('shield blocks the later killing spell',()=>{
     const game=gameReady(),night=blankNight(game),protector=game.circles[0].wizards[0],killer=game.circles[0].wizards[1],target=game.circles[1].wizards[0]
-    protector.knownSpells=['shield','finalWord'];killer.knownSpells=['shield','finalWord'];killer.level=3
+    killer.level=3
     Object.assign(night.actions.find(a=>a.wizardId===protector.id),{spellId:'shield',targetWizardId:target.id})
     Object.assign(night.actions.find(a=>a.wizardId===killer.id),{spellId:'finalWord',spokenName:target.trueName})
     const result=resolveNight(game,night)

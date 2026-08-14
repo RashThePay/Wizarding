@@ -11,12 +11,11 @@ function resolveNamedTarget(game, action) {
 }
 
 function candidatesForRandom(game, action, spell, actor, target) {
-  const actorKnowledge = circle(game,actor.id).knownSpells
   if (spell.random === 'livingName') return allWizards(game).filter(w => w.alive).map(w => w.id)
   if (spell.random === 'circleLivingName') return target ? circle(game, target.id).wizards.filter(w => w.alive).map(w => w.id) : []
-  if (spell.random === 'unknownAtLevel') return SPELLS.filter(s => s.level === actor.level && !actorKnowledge.includes(s.id)).map(s => s.id)
-  if (spell.random === 'unknownLevelOne') return SPELLS.filter(s => s.level === 1 && !actorKnowledge.includes(s.id)).map(s => s.id)
-  if (spell.random === 'targetKnownSpell') return target ? circle(game,target.id).knownSpells.filter(id => !actorKnowledge.includes(id)) : []
+  if (spell.random === 'unknownAtLevel') return SPELLS.filter(s => s.level === actor.level).map(s => s.id)
+  if (spell.random === 'unknownLevelOne') return SPELLS.filter(s => s.level === 1).map(s => s.id)
+  if (spell.random === 'targetKnownSpell') return SPELLS.map(s => s.id)
   if (spell.random === 'existingLink') return target?.links || []
   return []
 }
